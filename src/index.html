@@ -60,60 +60,58 @@
 
 <template id="movie-template">
   <div class="movie">
-    <img src=""/>
-
+    <img src="" />
     <h2></h2>
     <p class="tagline"></p>
-
-    <h3>Viewer Ratings</h3>
+    <h3>View Ratings</h3>
     <ul class="scores"></ul>
   </div>
 </template>
 
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js" type="text/javascript"></script>
-
 <script>
-  function addScores(element, scores) {
-    scores.forEach((score) => {
-      const item = document.createElement('li');
-      const label = document.createElement('span');
-      label.classList.add('source');
+  const addScores = (element, scores) => {
+    scores.map((score) => {
+      const item = document.createElement("li")
+      const label = document.createElement("span")
+      label.classList.add("source")
 
       // shorten the long name to make the layout look nice
-      label.innerText = score.Source === 'Internet Movie Database' ? 'IMDb' : score.Source;
-      item.appendChild(label);
+      label.innerText =
+        score.Source === "Internet Movie Database" ? "IMDB" : score.Source
 
-      const value = document.createElement('span');
-      value.innerText = score.Value;
-      item.appendChild(value);
+      item.append(label)
 
-      const scoreElement = element.querySelector('.scores');
-      scoreElement.appendChild(item);
+      const value = document.createElement("span")
+      value.innerHTML = score.Value
+      item.appendChild(value)
+
+      const scoreElement = element.querySelector(".scores")
+      scoreElement.appendChild(item)
+    })
+  }
+  async function initialize() {
+    const movies = await fetch("/.netlify/functions/movies").then((response) =>
+      response.json()
+    )
+
+    const container = document.querySelector(".movies")
+    const template = document.querySelector("#movie-template")
+
+    movies.map((movie) => {
+      const element = template.content.cloneNode(true)
+
+      const img = element.querySelector("img")
+      img.src = movie.poster
+      img.alt = movie.title
+
+      element.querySelector("h2").innerText = movie.title
+      element.querySelector(".tagline").innerText = movie.tagline
+
+      if (movie.scores.length) addScores(element, movie.scores)
+
+      container.appendChild(element)
     })
   }
 
-  async function initialize() {
-    const movies = await fetch('/.netlify/functions/movies')
-      .then((response) => response.json());
-
-    const container = document.querySelector('.movies');
-    const template = document.querySelector('#movie-template');
-
-    movies.forEach((movie) => {
-      const element = template.content.cloneNode(true);
-
-      const img = element.querySelector('img');
-      img.src = movie.poster;
-      img.alt = movie.title;
-
-      element.querySelector('h2').innerText = movie.title;
-      element.querySelector('.tagline').innerText = movie.tagline;
-
-      addScores(element, movie.scores);
-
-      container.appendChild(element);
-    });
-  }
-
-  initialize();
+  initialize()
 </script>

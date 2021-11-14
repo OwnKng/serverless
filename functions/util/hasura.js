@@ -1,19 +1,18 @@
-const fetch = require('node-fetch');
+const fetch = require("node-fetch")
 
-async function query({ query, variables = {} }) {
+const query = async ({ query, variables = {} }) => {
   const result = await fetch(process.env.HASURA_API_URL, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-Hasura-Admin-Secret': process.env.HASURA_ADMIN_SECRET,
+      "Content-Type": "application/json",
+      "X-Hasura-Admin-Secret": process.env.HASURA_API_SECRET,
     },
     body: JSON.stringify({ query, variables }),
-  }).then((response) => response.json());
+  }).then((response) => response.json())
 
-  // TODO show helpful info if there’s an error
-  // result.errors
+  // TODO error handling
 
-  return result.data;
+  return result.data
 }
 
-exports.query = query;
+exports.query = query

@@ -1,10 +1,11 @@
-const { URL } = require('url');
-const fetch = require('node-fetch');
-const { query } = require('./util/hasura');
+const { URL } = require("url")
+const fetch = require("node-fetch")
+const { query } = require("./util/hasura")
+require("dotenv").config()
 
 exports.handler = async () => {
   const { movies } = await query({
-    query: `
+    query: /* graphql */ `
       query {
         movies {
           id
@@ -13,35 +14,32 @@ exports.handler = async () => {
           title
         }
       }
-    `,
-  });
+      `,
+  })
 
-  const api = new URL('https://www.omdbapi.com/');
+  const api = new URL("https://www.omdbapi.com/")
 
-  // add the secret API key to the query string
-  api.searchParams.set('apikey', process.env.OMDB_API_KEY);
+  api.searchParams.set("apiKey", process.env.OMDB_API_KEY)
 
   const promises = movies.map((movie) => {
-    // use the movie’s IMDb ID to look up details
-    api.searchParams.set('i', movie.id);
+    api.searchParams.set("i", movie.id)
 
     return fetch(api)
       .then((response) => response.json())
       .then((data) => {
-        const scores = data.Ratings;
+        const scores = data.Ratings || {}
 
         return {
           ...movie,
           scores,
-        };
-      });
-  });
+        }
+      })
+  })
 
-  // https://lwj.dev/blog/keep-async-await-from-blocking-execution/
-  const moviesWithRatings = await Promise.all(promises);
+  const moviesWithRatings = await Promise.all(promises)
 
   return {
     statusCode: 200,
     body: JSON.stringify(moviesWithRatings),
-  };
-};
+  }
+}
